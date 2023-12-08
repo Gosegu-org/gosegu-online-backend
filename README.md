@@ -1,1 +1,0 @@
-# gosegu-online-backend
