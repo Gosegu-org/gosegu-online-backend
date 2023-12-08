@@ -1,5 +1,5 @@
 <?php
-require_once("inc/db.php");
+require_once("../inc/db.php");
 
 $user_id = isset($_POST['user_id']) ? $_POST['user_id'] : null;
 $user_name = isset($_POST['user_name']) ? $_POST['user_name'] : null;
@@ -20,6 +20,7 @@ if($user_id == null || $user_name == null || $user_pw == null || $user_email == 
 }
 
 $member_count = db_select("SELECT count(user_id) cnt FROM users WHERE user_id = ?", array($user_id));
+
 if($member_count && $member_count[0]['cnt'] == 1) {
     $status = [
         'code' => 409,
@@ -33,6 +34,7 @@ if($member_count && $member_count[0]['cnt'] == 1) {
 }
 
 $member_count = db_select("SELECT count(user_email) cnt FROM users WHERE user_email = ?", array($user_email));
+
 if($member_count && $member_count[0]['cnt'] == 1) {
     $status = [
         'code' => 409,
