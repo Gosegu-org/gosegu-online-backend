@@ -1,55 +1,57 @@
 <?php
-require_once("../inc/db.php");
-
-$user_id = isset($_POST['user_id']) ? $_POST['user_id'] : null;
-$user_pw = isset($_POST['user_pw']) ? $_POST['user_pw'] : null;
-
-if($user_id == null || $user_pw == null) {
-    $status = [
-        'code' => 400,
-        'message' => 'value error'
-    ];
-
-    header('Content-Type: application/json');
-    echo json_encode($status);
-
-    exit();
-}
-
-$user_data = db_select("SELECT * FROM users WHERE user_id = ?", array($user_id));
-
-if ($user_data == null || count($user_data) == 0){
-    $status = [
-        'code' => 403,
-        'message' => 'id error'
-    ];
-
-    header('Content-Type: application/json');
-    echo json_encode($status);
-
-    exit();
-}
-
-$is_match_password = $user_pw == $user_data[0]['user_pw'];
-
-if($is_match_password) {
-    $status = [
-        'code' => 201,
-        'message' => 'sign in successful'
-    ];   
-    
-    header('Content-Type: application/json');
-    echo json_encode($status);
-} else {
-    $status = [
-        'code' => 403,
-        'message' => 'password error'
-    ];
-
-    header('Content-Type: application/json');
-    echo json_encode($status);
-}
-
 session_start();
-$_SESSION['user_id'] = $user_data[0]['user_id'];
+
+$user_id = $_POST["user_id"];
+$user_pw = $_POST["user_pw"];
+
+include "../inc/dbcon.php";
+
+$sql = "select user_id, user_pw from users where user_id='$user_id';";
+
+$result = mysqli_query($dbcon, $sql);
+
+/* DB에서 결과값 가져오기 */
+// mysqli_fetch_row // 필드 순서
+// mysqli_fetch_array // 필드명
+// mysqli_num_rows // 결과행의 개수
+$num = mysqli_num_rows($result);
+
+if(!$num){ // 아이디가 존재하지 않으면
+    // 메세지 출력 후 이전 페이지로 이동
+    echo "
+        <script type=\"text/javascript\">
+            alert(\"일치하는 아이디가 없습니다.\");
+            history.back();
+        </script>
+    ";
+    exit;
+}
+
+$array = mysqli_fetch_array($result);
+$is_match = password_verify($user_pw, $array["user_pw"]);
+
+if($is_match === false){
+    echo "
+        <script type=\"text/javascript\">
+            alert(\"비밀번호가 일치하지 않습니다.\");
+            history.back();
+        </script>
+    ";
+exit;
+}
+else {
+    $_SESSION["user_id"] = $user_id;
+    // $_SESSION["user_pw"] = $user_pw;
+    echo $_SESSION;
+    /* DB 연결 종료 */
+    mysqli_close($dbcon);
+
+    /* 페이지 이동 */
+    echo "
+        <script type=\"text/javascript\">
+            location.href = \"/index.php\";
+        </script>
+    ";
+}
+
 ?>

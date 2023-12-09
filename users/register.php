@@ -1,74 +1,50 @@
 <?php
-require_once("../inc/db.php");
+include "../inc/dbcon.php";
 
-$user_id = isset($_POST['user_id']) ? $_POST['user_id'] : null;
-$user_name = isset($_POST['user_name']) ? $_POST['user_name'] : null;
-$user_pw = isset($_POST['user_pw']) ? $_POST['user_pw'] : null;
-$user_email = isset($_POST['user_email']) ? $_POST['user_email'] : null;
-$user_comment = isset($_POST['user_comment']) ? $_POST['user_comment'] : null;
+// 사용자가 입력한 회원가입 정보
+$user_id = $_POST["user_id"];
+$user_name = $_POST["user_name"];
+$user_pw = password_hash($_POST["user_pw"], PASSWORD_BCRYPT);
+$user_email = $_POST["user_email"];
+$user_comment = $_POST["user_comment"];
 
-if($user_id == null || $user_name == null || $user_pw == null || $user_email == null) {
-    $status = [
-        'code' => 403,
-        'message' => 'value error'
-    ];
+// 입력한 아이디가 이미 존재하는지 확인
+$check_existing_user_query = "SELECT user_id FROM users WHERE user_id='$user_id'";
+$check_existing_user_result = mysqli_query($dbcon, $check_existing_user_query);
 
-    header('Content-Type: application/json');
-    echo json_encode($status);
-
-    exit();
+if(mysqli_num_rows($check_existing_user_result) > 0){
+    // 이미 존재하는 아이디인 경우
+    echo "
+        <script type=\"text/javascript\">
+            alert(\"이미 존재하는 아이디입니다. 다른 아이디를 선택해주세요.\");
+            history.back();
+        </script>
+    ";
+    exit;
 }
 
-$member_count = db_select("SELECT count(user_id) cnt FROM users WHERE user_id = ?", array($user_id));
+// 새로운 회원 정보 데이터베이스에 삽입
+$insert_user_query = "INSERT INTO users (user_id, user_name, user_pw, user_email, user_comment) 
+                      VALUES ('$user_id', '$user_name', '$user_pw', '$user_email', '$user_comment')";
 
-if($member_count && $member_count[0]['cnt'] == 1) {
-    $status = [
-        'code' => 409,
-        'message' => 'duplicate error'
-    ];
+if(mysqli_query($dbcon, $insert_user_query)){
+    /* DB 연결 종료 */
+    mysqli_close($dbcon);
 
-    header('Content-Type: application/json');
-    echo json_encode($status);
-
-    exit();
-}
-
-$member_count = db_select("SELECT count(user_email) cnt FROM users WHERE user_email = ?", array($user_email));
-
-if($member_count && $member_count[0]['cnt'] == 1) {
-    $status = [
-        'code' => 409,
-        'message' => 'duplicate error'
-    ];
-
-    header('Content-Type: application/json');
-    echo json_encode($status);
-
-    exit();
-}
-
-$successful = db_insert("INSERT INTO users (user_id, user_name, user_pw, user_email, user_comment) VALUES (:user_id, :user_name, :user_pw, :user_email, :user_comment )",
-    array(
-        'user_id' => $user_id,
-        'user_name' => $user_name,
-        'user_pw' => $user_pw,
-        'user_email' => $user_email,
-        'user_comment' => $user_comment
-    )
-);
-
-if($successful) {
-    $status = [
-        'code' => 201,
-        'message' => 'sign up successful'
-    ];
+    /* 페이지 이동 */
+    echo "
+        <script type=\"text/javascript\">
+            alert(\"회원가입에 성공했습니다.\");
+            location.href = \"/user/login.php\";
+        </script>
+    ";
 } else {
-    $status = [
-        'code' => 500,
-        'message' => 'sign up failed'
-    ];
+    // 회원가입 실패 시
+    echo "
+        <script type=\"text/javascript\">
+            alert(\"회원가입에 실패했습니다. 다시 시도해주세요.\");
+            history.back();
+        </script>
+    ";
 }
-
-header('Content-Type: application/json');
-echo json_encode($status);
 ?>
