@@ -1,7 +1,7 @@
 <?php
 include "../inc/dbcon.php";
 
-$sql = "SELECT * FROM posts ORDER BY post_date DESC";
+$sql = "SELECT * FROM posts ORDER BY post_date DESC LIMIT 3";
 $result = mysqli_query($dbcon, $sql);
 
 if ($result->num_rows > 0) {

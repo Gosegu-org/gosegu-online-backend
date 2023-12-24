@@ -1,8 +1,11 @@
 <?php
 include "../inc/dbcon.php";
 
-$sql = "SELECT * FROM posts ORDER BY post_date DESC";
+$user_id = $_GET["user_id"];
+
+$sql = "SELECT * FROM posts WHERE user_id = '$user_id' ORDER BY post_date DESC";
 $result = mysqli_query($dbcon, $sql);
+
 
 if ($result->num_rows > 0) {
     $posts = array();

@@ -32,7 +32,7 @@ mysqli_close($dbcon);
 echo "
     <script type=\"text/javascript\">
         alert(\"정상처리 되었습니다.\");
-        location.href = \"../index.php\";
+        location.href = \"/index.php\";
     </script>
 ";
 ?>

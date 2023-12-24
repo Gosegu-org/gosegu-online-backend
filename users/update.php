@@ -21,6 +21,11 @@ if(!$user_pw){
 /* 데이터베이스에 쿼리 전송 */
 mysqli_query($dbcon, $sql);
 
+echo "
+        <script type=\"text/javascript\">
+            location.href = \"/user/my_account.php\";
+        </script>
+    ";
 
 /* DB(연결) 종료 */
 mysqli_close($dbcon);
